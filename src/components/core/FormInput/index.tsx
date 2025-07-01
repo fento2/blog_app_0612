@@ -10,6 +10,7 @@ interface IFormInput {
   onChange?: (e: any) => void;
   ref?: any;
   value?: string;
+  defaultValue?: string;
 }
 
 const FormInput: React.FC<IFormInput> = ({
@@ -20,6 +21,7 @@ const FormInput: React.FC<IFormInput> = ({
   onChange,
   ref,
   value,
+  defaultValue,
 }) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
   if (type === "password") {
@@ -63,10 +65,12 @@ const FormInput: React.FC<IFormInput> = ({
         id={name}
         name={name}
         type={type}
+        ref={ref}
         placeholder={placeholder}
         className="w-full border border-gray-100 px-3 py-2 rounded-md shadow"
         onChange={onChange}
         value={value}
+        defaultValue={defaultValue}
       />
     </div>
   );

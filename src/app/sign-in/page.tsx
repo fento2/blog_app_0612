@@ -4,19 +4,61 @@ import * as React from "react";
 import AccountImage from "../../../public/access_account.svg";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { apiCall } from "@/helper/apiCall";
+import { useRouter } from "next/navigation";
+import { setSignIn } from "@/lib/redux/features/userSlice";
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 const SignInPage: React.FunctionComponent = () => {
+
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   // Refs for form inputs
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
 
   const onSignIn = async () => {
     try {
+      const email = emailRef.current?.value;
+      const password = passwordRef.current?.value;
+
+      if (!email && !password) {
+        alert('isi semuaform');
+        return;
+      }
+
+      const res = await apiCall.get("/accounts", {
+        params: {
+          where: `email = '${email}' AND password = '${password}'`,
+        },
+      });
+
+
+      if (!res.data[0]) {
+        alert('email atau password salah')
+        return;
+      }
+
+      dispatch(setSignIn(res.data[0]));
+
+      //store objectId to localStorage
+      localStorage.setItem("tkn", res.data[0].objectId);
+
+      alert('selamat datang');
+      router.replace("/");
+
     } catch (error) {
+
       console.error(error);
       alert("Something went wrong");
     }
   };
+
+  React.useEffect(() => {
+    if (localStorage.getItem("tkn")) {
+      router.replace("/");
+    }
+  }, []);
 
   return (
     <div className="h-screen px-10">
@@ -44,6 +86,7 @@ const SignInPage: React.FunctionComponent = () => {
                 <Button
                   type="button"
                   className="bg-slate-700 text-white px-4 py-2 shadow"
+                  onClick={onSignIn}
                 >
                   Sign In
                 </Button>

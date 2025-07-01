@@ -2,7 +2,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { FaImage } from "react-icons/fa";
-import { callAPI } from "@/config/axios";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,35 +10,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { apiCall } from "@/helper/apiCall";
+import { toast } from "react-toastify";
+import UpdateArticleDialog from "./componets/UpdateArticleDialog";
+import { dataCategory } from "@/helper/dataCategory";
 
 const PostPage: React.FunctionComponent = () => {
   const router = useRouter();
-  const articleFormRef = React.useRef<any>(null);
+  const articleContentRef = React.useRef<HTMLTextAreaElement>(null);
   const articleTitleRef = React.useRef<HTMLInputElement>(null);
   const articleThumbnailRef = React.useRef<HTMLInputElement>(null);
-  const articleCategoryRef = React.useRef<string | null>(null);
+  const articleCategoryRef = React.useRef<string | null>(null); //isi string atau null default awal
+  const [getArticleCategory, setGetArticleCategory] = React.useState<string>();
 
-  const [postsList, setPostsList] = React.useState<any[]>([]);
+  const [articleList, setArticleList] = React.useState<any[]>([]);
 
   const getArticlesList = async () => {
     try {
-      const { data } = await callAPI.get(`/articles`);
+      const res = await apiCall.get(
+        "/articles?pageSize=100&sortBy=%60created%60%20desc"
+      );
 
-      setPostsList(data);
+      setArticleList(res.data);
     } catch (error) {
       console.log(error);
     }
   };
 
+
+  // useEffect hanya akan menjalankan fungsi didalamnya sekali saat pertama kali render halaman
   React.useEffect(() => {
-    getArticlesList();
+    if (localStorage.getItem("tkn")) {
+      getArticlesList();
+    } else {
+      router.replace("/sign-in");
+    }
   }, []);
 
-  const printPostsList = () => {
-    return postsList.map((val: any, idx: number) => {
+  const onDelete = async (objectId: string) => {
+    try {
+      if (confirm("Yakin mau menghapus ?")) {
+        await apiCall.delete(`/articles/${objectId}`);
+
+        toast.success("Delete article success", {
+          autoClose: 3000,
+        });
+        getArticlesList();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const printArticleList = () => {
+    return articleList.map((val: any, idx: number) => {
       return (
         <div
-          key={val.objectId}
+          key={idx}
           className="w-full p-4 flex items-center rounded-md bg-white cursor-pointer"
         >
           <div className="w-full rounded-e-xl">
@@ -56,12 +83,17 @@ const PostPage: React.FunctionComponent = () => {
                 </h6>
               </div>
               <div className="flex items-center gap-4">
-                <Button variant="outline" size="sm">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(val.objectId)}
+                >
                   Delete
                 </Button>
-                <Button variant="outline" size="sm">
-                  Edit
-                </Button>
+                <UpdateArticleDialog
+                  data={val}
+                  getUpdateList={getArticlesList} />
               </div>
             </div>
           </div>
@@ -73,21 +105,34 @@ const PostPage: React.FunctionComponent = () => {
   const onCreateArticle = async () => {
     try {
       if (articleTitleRef.current) {
-        const response = await callAPI.post("/articles", {
+        const response = await apiCall.post("/articles", {
           title: articleTitleRef.current.value,
           category: articleCategoryRef.current,
           thumbnail: articleThumbnailRef.current?.value,
-          content: articleFormRef.current.getContent(),
+          content: articleContentRef.current?.value,
         });
-        alert("Tambah data article berhasil");
         getArticlesList();
+
+        toast.success("Tambah data article berhasil",{
+          autoClose: 3000,
+        });
+        
       } else {
-        alert("Form todo jangan sampai kosong");
+
+        alert("Form article jangan sampai kosong");
       }
+
+      articleTitleRef.current!.value = "";
+      articleThumbnailRef.current!.value = "";
+      articleContentRef.current!.value = "";
+      articleCategoryRef.current! = "";
+      setGetArticleCategory("");
+
     } catch (error) {
       console.log(error);
     }
   };
+
   return (
     <div id="timeline" className="w-full md:flex gap-4">
       <div className="lg:w-1/2 items-center">
@@ -106,21 +151,26 @@ const PostPage: React.FunctionComponent = () => {
               type="text"
             />
             <Select
-              onValueChange={(value) => (articleCategoryRef.current = value)}
+              value={getArticleCategory}
+              onValueChange={(value) => {  // pilihan user
+                articleCategoryRef.current = value;
+                setGetArticleCategory(value);
+              }}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select Category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Business">Business</SelectItem>
-                <SelectItem value="Technology">Technology</SelectItem>
-                <SelectItem value="Economics">Economics</SelectItem>
-                <SelectItem value="Lifestyle">Lifestyle</SelectItem>
-                <SelectItem value="Goverment">Goverment</SelectItem>
+                {dataCategory.map((val, index) => (
+                  <SelectItem key={index} value={val}>
+                    {val}
+                  </SelectItem>
+                ))
+                }
               </SelectContent>
             </Select>
           </div>
-          <textarea ref={articleFormRef} />
+          <textarea ref={articleContentRef} />
           <hr className="md:mb-4" />
           <div className="flex p-2 justify-between items-center">
             <div className="flex gap-2">
@@ -138,7 +188,7 @@ const PostPage: React.FunctionComponent = () => {
           </div>
         </div>
       </div>
-      <div className="lg:w-1/2 space-y-3">{printPostsList()}</div>
+      <div className="lg:w-1/2 space-y-3">{printArticleList()}</div>
     </div>
   );
 };

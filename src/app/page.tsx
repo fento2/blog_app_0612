@@ -1,29 +1,21 @@
 "use client";
 import * as React from "react";
-import { callAPI } from "@/config/axios";
+import { apiCall } from "@/helper/apiCall";
 import Image from "next/image";
+import { dataCategory } from "@/helper/dataCategory";
 
 const Home: React.FunctionComponent = () => {
-  const [postsList, setPostsList] = React.useState<any[]>([]);
+  const [articleList, setArticleList] = React.useState<any[]>([]);
   const [category, setCategory] = React.useState<string[]>([
     "All",
-    "Teknologi",
-    "Strategi",
-    "Penulisan",
-    "CMS",
-    "SEO",
-    "Motivasi",
-    "UI/UX",
-    "Frontend",
-    "Tutorial",
+    ...dataCategory,
   ]);
   const [filterCategory, setFilterCategory] = React.useState<string>("All");
 
   const getArticlesList = async () => {
     try {
-      const query = encodeURIComponent(`category='${filterCategory}'`);
-      const { data } = await callAPI.get("/articles");
-      setPostsList(data);
+      const { data } = await apiCall.get("/articles?pageSize=100&sortBy=%60created%60%20desc");
+      setArticleList(data);
     } catch (error) {
       console.log(error);
     }
@@ -33,8 +25,13 @@ const Home: React.FunctionComponent = () => {
     getArticlesList();
   }, [filterCategory]);
 
-  const printPostsList = () => {
-    return postsList.map((val: any, idx: number) => {
+  const printArticleList = () => {
+
+    const printList = filterCategory === "All" ?
+      articleList : articleList.filter((val) => val.category === filterCategory);
+
+    return printList.map((val: any, idx: number) => {
+
       return (
         <div
           key={val.objectId}
@@ -68,7 +65,9 @@ const Home: React.FunctionComponent = () => {
           </div>
         </div>
       );
+
     });
+
   };
 
   return (
@@ -85,22 +84,22 @@ const Home: React.FunctionComponent = () => {
           />
           <div className="absolute bottom-0 right-0 w-full p-4 text-right bg-slate-200 bg-opacity-55">
             <p className="text-2xl md:text-4xl lg:text-5xl italic">
-              {postsList[0]?.title}
+              {articleList[0]?.title}
             </p>
           </div>
         </div>
       </section>
       <section id="article-list" className="space-y-8 mt-8 px-20">
         <div id="article-filter" className="w-full overflow-x-auto py-8">
+
           {/* filter */}
           <ul className="flex gap-4">
             {category.map((val: string) => (
               <li key={val}>
                 <span
-                  className={`border ${
-                    filterCategory === val &&
+                  className={`border ${filterCategory === val &&
                     "bg-slate-500 text-white font-semibold"
-                  } border-slate-500 rounded-full py-1 px-4 cursor-pointer`}
+                    } border-slate-500 rounded-full py-1 px-4 cursor-pointer`}
                   onClick={() => setFilterCategory(val)}
                 >
                   {val}
@@ -110,7 +109,7 @@ const Home: React.FunctionComponent = () => {
           </ul>
         </div>
         <div className="w-full h-screen md:grid md:grid-cols-3 xl:grid-cols-5 grid-rows-3 items-center gap-3 space-y-5 md:space-y-0">
-          {printPostsList()}
+          {printArticleList()}
         </div>
       </section>
     </main>
