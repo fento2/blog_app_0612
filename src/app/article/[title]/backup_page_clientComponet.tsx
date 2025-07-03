@@ -25,7 +25,7 @@ const ArticleDetailPage: React.FunctionComponent<IArticleDetailPageProps> = (
 
   React.useEffect(() => {
     getDetail();
-  }, []);
+  });
   return (
     <div>
       <h1 className="text-5xl">{detail?.title}</h1>

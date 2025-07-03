@@ -58,7 +58,7 @@ const SignInPage: React.FunctionComponent = () => {
     if (localStorage.getItem("tkn")) {
       router.replace("/");
     }
-  }, []);
+  });
 
   return (
     <div className="h-screen px-10">

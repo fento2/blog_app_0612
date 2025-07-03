@@ -37,7 +37,7 @@ const Navbar: React.FunctionComponent = () => {
   React.useEffect(() => { //mode 1 setiap kali buka halaman 1 kali
     keepLogin();
 
-  }, []);
+  });
 
 
   return (

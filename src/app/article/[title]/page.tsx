@@ -1,8 +1,9 @@
 import { apiCall } from "@/helper/apiCall";
+import Image from "next/image";
 import * as React from "react";
 
 interface IArticleDetailPageProps {
-    params: { title: string };
+    params: Promise<{ title: string }>;
 }
 
 const getDetail = async (title: string) => {
@@ -23,11 +24,10 @@ const getDetail = async (title: string) => {
 
 }
 
-const ArticleDetailPage: React.FunctionComponent<
-    IArticleDetailPageProps
-> = async (props) => {
+const ArticleDetailPage = async ({params}: IArticleDetailPageProps) => {
 
-    const detailData = await getDetail(props.params.title);
+    const {title} = await params;
+    const detailData = await getDetail(title);
 
     return (
         <div className="flex justify-center px-4 py-10 font-sans bg-white text-gray-800">
@@ -40,7 +40,7 @@ const ArticleDetailPage: React.FunctionComponent<
                 </p>
 
                 <div className="w-full overflow-hidden rounded-2xl">
-                    <img
+                    <Image
                         src={detailData.thumbnail}
                         alt="Thumbnail"
                         className="w-full object-cover aspect-video"

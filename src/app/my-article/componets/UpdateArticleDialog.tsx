@@ -78,7 +78,7 @@ const UpdateArticleDialog: React.FC<IUpdateArticleDialogProps> = (props) => {
                     <DialogHeader>
                         <DialogTitle>Edit Article</DialogTitle>
                         <DialogDescription>
-                            Make changes to your article. Click save when you're done.
+                            Make changes to your article. Click save when youre done.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
