@@ -3,8 +3,10 @@ import * as React from "react";
 import { apiCall } from "@/helper/apiCall";
 import Image from "next/image";
 import { dataCategory } from "@/helper/dataCategory";
+import { useRouter } from "next/navigation";
 
 const Home: React.FunctionComponent = () => {
+  const router = useRouter();
   const [articleList, setArticleList] = React.useState<any[]>([]);
   const [category, setCategory] = React.useState<string[]>([
     "All",
@@ -36,6 +38,8 @@ const Home: React.FunctionComponent = () => {
         <div
           key={val.objectId}
           className="h-72 items-center bg-white rounded-xl cursor-pointer"
+          
+          onClick={() => router.push(`/article/${val.title}`)}
         >
           <div className="relative h-36 w-full">
             <Image

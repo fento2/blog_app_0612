@@ -35,6 +35,9 @@ const UpdateArticleDialog: React.FC<IUpdateArticleDialogProps> = (props) => {
     const FormEditRef = useRef<HTMLFormElement>(null);
     const categoryRef = useRef<string | null>(props.data.category || null);
 
+    const [open, setOpen] = React.useState(false);
+
+
     const onBtEdit = async () => {
         if (FormEditRef.current) {
             const inputEdit = new FormData(FormEditRef.current);
@@ -43,14 +46,16 @@ const UpdateArticleDialog: React.FC<IUpdateArticleDialogProps> = (props) => {
                 await apiCall.put(`/articles/${props.data?.objectId}`, {
                     title: inputEdit.get("title"),
                     thumbnail: inputEdit.get("thumbnail"),
-                    category: categoryRef.current, // kalau primitive data gak perlu .value
+                    category: categoryRef.current,
                     content: inputEdit.get("content"),
                 });
 
-                toast.success("article berhasil di update!",{
+                toast.success("article berhasil di update!", {
                     autoClose: 3000
                 });
                 props.getUpdateList();
+                setOpen(false);
+
 
             } catch (error) {
                 console.error(error);
@@ -60,12 +65,14 @@ const UpdateArticleDialog: React.FC<IUpdateArticleDialogProps> = (props) => {
     };
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
+
             <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
                     Edit
                 </Button>
             </DialogTrigger>
+
             <DialogContent>
                 <form ref={FormEditRef}>
                     <DialogHeader>
@@ -116,14 +123,18 @@ const UpdateArticleDialog: React.FC<IUpdateArticleDialogProps> = (props) => {
                     </div>
                     <DialogFooter className="mt-4">
                         <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
+                            <Button variant="outline"
+
+                            >Cancel</Button>
                         </DialogClose>
 
-                        <DialogClose asChild>
-                            <Button type="button" onClick={onBtEdit}>
-                                Save changes
-                            </Button>
-                        </DialogClose>
+
+                        <Button type="button"
+                            onClick={onBtEdit}>
+                            Save changes
+                        </Button>
+
+
                     </DialogFooter>
                 </form>
             </DialogContent>
